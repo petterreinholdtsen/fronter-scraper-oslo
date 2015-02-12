@@ -5,4 +5,18 @@ This script log into fronter and fetches information from all the
 rooms you have access to and check the results into git.  This make it
 easier to see what changed since the last time.
 
+To run this script on a Debian machine, install the dependencies:
+
+  apt-get install git lynx-cur libio-prompter-perl libwww-mechanize-perl \
+      libconfig-inifiles-perl
+
+and then run the update-git script.
+
+ ./update-git
+
+This will create a new git repository in a subdirectory and fetch the
+front pages of all the accessable Fronter rooms, convert them to text
+check them into git.  It will also show the difference for these text
+files since the last run.
+
 Contact pere@hungry.com if you have comments or patches.
