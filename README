@@ -19,4 +19,7 @@ front pages of all the accessable Fronter rooms, convert them to text
 check them into git.  It will also show the difference for these text
 files since the last run.
 
+The latest version of this system is available from
+https://github.com/petterreinholdtsen/fronter-scraper-oslo .
+
 Contact pere@hungry.com if you have comments or patches.
