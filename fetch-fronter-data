@@ -1,0 +1,157 @@
+#!/usr/bin/perl
+#
+# Script access to the Fronter page used by the schools in Oslo, Norway
+#
+# Log in, fetch all data in all rooms availabe and check the result
+# into git to track changes.
+
+use utf8;
+use strict;
+use warnings;
+use IO::Prompter;
+use WWW::Mechanize;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($username $password);
+
+my $cfg = Config::IniFiles->new( -file => $ENV{'HOME'} . "/.fetch-fronter.ini" );
+if ( ! defined $cfg ) {
+    print <<EOF;
+error: missing required file ~/.fetch-fronter.ini.  It should contain
+username and password and look similar to this:
+
+  [auth]
+  username=myusername
+  password=secret
+
+If no password entry is present, the script will prompt for the
+password.
+EOF
+    exit(1);
+}
+if (! $cfg->val( 'auth', 'username' ) ) {
+    print STDERR "error: missing required username in ~/.fetch-fronter.ini\n";
+    exit(1);
+} else {
+    $username = $cfg->val( 'auth', 'username' );
+}
+if ( $cfg->val( 'auth', 'password' ) ) {
+    $password = $cfg->val( 'auth', 'password' );
+} else {
+    $password = prompt("Password for $username:", -echo=>'*', -stdio);
+}
+
+my $url = $cfg->val( 'site', 'url' ) or "https://fronter.com/osloskoler/";
+
+my $mech = WWW::Mechanize->new();
+
+$mech->get($url);
+$mech->submit_form(fields      => {
+    username    => $username, password    => $password,
+                   } );
+
+
+my $rssurl = 'https://fronter.com/osloskoler/rss/get_today_rss.php?elements=default&LANG=no';
+$mech->get($rssurl);
+save_content($mech, 'today.rss');
+
+my $messageurl = 'https://dashboard.fronter.com/api/messages/';
+$mech->get($messageurl);
+save_content($mech, 'messages.json');
+
+my $roomurl =
+    'https://fronter.com/osloskoler/adm/projects.phtml?mode=displayRoomchooser';
+
+# Return hash with room names as key and room ID as value
+sub myrooms {
+    my ($mech) = @_;
+    my %room;
+    $mech->get($roomurl);
+    for my $link ($mech->links()) {
+        my $url = $link->url();
+        if ($url =~ m%/links/list_files.phtml\?edit=(\d+)$%) {
+            $room{$link->text()} = $1;
+        }
+    }
+    return \%room;
+}
+my $myroomsref = myrooms($mech);
+
+#my $dagensurl = 'https://fronter.com/osloskoler/personal/index.phtml?orderid=0&mo=1';
+#$mech->get($dagensurl);
+#save_content($mech, 'dagens.html');
+
+for my $roomname ( keys %{$myroomsref} ){
+    print "Fetching room $roomname\n";
+    $mech->get($roomurl);
+    print $mech->uri(), "\n";
+    $mech->follow_link(text => $roomname);
+    print $mech->uri(), "\n";
+#    save_content($mech, "$roomname.html");
+#    for my $link ($mech->links()) {
+#        print "  ", $link->url(), "\n";
+#    }
+
+    save_room($mech, $roomname, $myroomsref->{$roomname});
+}
+
+if (0) {
+$url = 'https://fronter.com/osloskoler/links/structuretree.phtml?treeid=6489941&expand=6489941&elementid=37755832&element_type=element';
+$mech->get($url);
+save_content($mech, 'test.html');
+
+$url = 'https://fronter.com/osloskoler/links/structureprops.phtml?treeid=1301985428';
+save_content($mech, '1c.html');
+
+}
+
+# Ukeplaner
+#https://fronter.com/osloskoler/links/structureprops.phtml?treeid=6489946
+
+# Infobrev til foresatte (Tilpasset)
+#https://fronter.com/osloskoler/links/structureprops.phtml?treeid=6489947
+
+#https://fronter.com/osloskoler/links/index3.phtml?root_node_id=3914452&treeid=3914452
+
+
+# Rooms have several layers of iframes before the content show up.
+# This function try to trace the room id all the way down to the HTML
+# content.
+sub save_room {
+    my ($mech, $roomname, $roomid) = @_;
+
+    my $starturl =
+        "https://fronter.com/osloskoler/contentframeset.phtml?goto_prjid=$roomid";
+#    save_content($mech, "room-$roomid-contentframeset.html");
+
+    $mech->get("https://fronter.com/osloskoler/lpathobj/roommainpage.phtml?orderid=0&toolprjid=$roomid&logstat_toolid=77&mo=2");
+#    save_content($mech, "room-$roomid-mainpage-frame.html");
+
+    for my $link ($mech->find_link( id => 'fronterarchive_main')) {
+        my $url =  $link->url();
+        print $mech->uri(), "\n";
+        print "Got it? ", $url, "\n";
+        $mech->get($url);
+        my $savefile = "room-$roomname.html";
+        my $savetxtfile = "room-$roomname.txt";
+        save_content($mech, $savefile);
+        `lynx --dump -nolist "$savefile" > "$savetxtfile"`;
+    }
+
+#    $mech->get("https://fronter.com/osloskoler/prjframe/chp.phtml?edit=$roomid");
+#    save_content($mech, "room-$roomid-frame.html");
+}
+
+sub save_content {
+    my ($mech, $filename) = @_;
+#    print $mech->content(),"\n";
+    open(my $fh, '>', $filename) || die "unable to write to $filename";
+    my $content = $mech->content();
+
+    # Drop some passwords from the saved version.
+    $content =~ s/"authenticationToken":"[^"]+"/"authenticationToken":"<removed>"/g;
+    $content =~ s/"sessionHash":"[^"]+"/"sessionHash":"<removed>"/g;
+
+    print $fh $content;
+    close($fh);
+}

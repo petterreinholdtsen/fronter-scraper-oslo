@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ ! -d fronter-git ] ; then
+    mkdir fronter-git
+    (cd fronter-git; git init)
+fi
+
+cd fronter-git ; ../fetch-fronter-data
+
+git add *.html
+git commit -m "Update raw HTML data."
+git add *.txt *.rss
+git diff HEAD
+git commit -m "Update information."

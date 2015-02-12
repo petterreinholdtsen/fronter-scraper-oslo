@@ -1,0 +1,8 @@
+Fetch data from Fronter used by the schools in Oslo
+===================================================
+
+This script log into fronter and fetches information from all the
+rooms you have access to and check the results into git.  This make it
+easier to see what changed since the last time.
+
+Contact pere@hungry.com if you have comments or patches.
