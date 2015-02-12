@@ -54,9 +54,10 @@ my $rssurl = 'https://fronter.com/osloskoler/rss/get_today_rss.php?elements=defa
 $mech->get($rssurl);
 save_content($mech, 'today.rss');
 
-my $messageurl = 'https://dashboard.fronter.com/api/messages/';
-$mech->get($messageurl);
-save_content($mech, 'messages.json');
+# FIXME Not sure why the message list is empty
+#my $messageurl = 'https://dashboard.fronter.com/api/messages/';
+#$mech->get($messageurl);
+#save_content($mech, 'messages.json');
 
 my $roomurl =
     'https://fronter.com/osloskoler/adm/projects.phtml?mode=displayRoomchooser';
