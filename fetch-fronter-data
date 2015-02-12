@@ -11,13 +11,12 @@ use warnings;
 use IO::Prompter;
 use WWW::Mechanize;
 use Config::IniFiles;
-use Getopt::Long;
 use vars qw($username $password);
 
-my $cfg = Config::IniFiles->new( -file => $ENV{'HOME'} . "/.fetch-fronter.ini" );
+my $cfg = Config::IniFiles->new( -file => $ENV{'HOME'} . '/.fetch-fronter.ini' );
 if ( ! defined $cfg ) {
-    print <<EOF;
-error: missing required file ~/.fetch-fronter.ini.  It should contain
+    print <<'EOF';
+error: missing required file $HOME/.fetch-fronter.ini.  It should contain
 username and password and look similar to this:
 
   [auth]
@@ -30,7 +29,7 @@ EOF
     exit(1);
 }
 if (! $cfg->val( 'auth', 'username' ) ) {
-    print STDERR "error: missing required username in ~/.fetch-fronter.ini\n";
+    print STDERR 'error: missing required username in ~/.fetch-fronter.ini\n';
     exit(1);
 } else {
     $username = $cfg->val( 'auth', 'username' );
@@ -89,7 +88,7 @@ for my $roomname ( keys %{$myroomsref} ){
     print $mech->uri(), "\n";
 #    save_content($mech, "$roomname.html");
 #    for my $link ($mech->links()) {
-#        print "  ", $link->url(), "\n";
+#        print '  ', $link->url(), "\n";
 #    }
 
     save_room($mech, $roomname, $myroomsref->{$roomname});
@@ -130,7 +129,7 @@ sub save_room {
     for my $link ($mech->find_link( id => 'fronterarchive_main')) {
         my $url =  $link->url();
         print $mech->uri(), "\n";
-        print "Got it? ", $url, "\n";
+        print 'Got it? ', $url, "\n";
         $mech->get($url);
         my $savefile = "room-$roomname.html";
         my $savetxtfile = "room-$roomname.txt";
