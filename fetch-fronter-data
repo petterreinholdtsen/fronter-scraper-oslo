@@ -41,7 +41,7 @@ if ( $cfg->val( 'auth', 'password' ) ) {
     $password = prompt("Password for $username:", -echo=>'*', -stdio);
 }
 
-my $url = $cfg->val( 'site', 'url' ) or "https://fronter.com/osloskoler/";
+my $url = $cfg->val( 'site', 'url' ) || 'https://fronter.com/osloskoler/';
 
 my $mech = WWW::Mechanize->new();
 
