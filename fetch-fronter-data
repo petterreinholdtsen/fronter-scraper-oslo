@@ -11,7 +11,9 @@ use warnings;
 use IO::Prompter;
 use WWW::Mechanize;
 use Config::IniFiles;
-use vars qw($username $password);
+use vars qw($debug $username $password);
+
+$debug = 0;
 
 my $cfg = Config::IniFiles->new( -file => $ENV{'HOME'} . '/.fetch-fronter.ini' );
 if ( ! defined $cfg ) {
@@ -82,11 +84,11 @@ my $myroomsref = myrooms($mech);
 #save_content($mech, 'dagens.html');
 
 for my $roomname ( keys %{$myroomsref} ){
-    print "Fetching room $roomname\n";
+    print "Fetching room $roomname\n" if $debug;
     $mech->get($roomurl);
-    print $mech->uri(), "\n";
+    print $mech->uri(), "\n" if $debug;
     $mech->follow_link(text => $roomname);
-    print $mech->uri(), "\n";
+    print $mech->uri(), "\n" if $debug;
 #    save_content($mech, "$roomname.html");
 #    for my $link ($mech->links()) {
 #        print '  ', $link->url(), "\n";
@@ -129,8 +131,8 @@ sub save_room {
 
     for my $link ($mech->find_link( id => 'fronterarchive_main')) {
         my $url =  $link->url();
-        print $mech->uri(), "\n";
-        print 'Got it? ', $url, "\n";
+        print $mech->uri(), "\n" if $debug;
+        print 'Got it? ', $url, "\n" if $debug;
         $mech->get($url);
         my $savefile = "room-$roomname.html";
         my $savetxtfile = "room-$roomname.txt";
