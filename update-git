@@ -14,7 +14,7 @@ cd fronter-git ; ../fetch-fronter-data
 tmpfile="$(tempfile)"
 if git commit -m "Update raw HTML data." *.html > $tmpfile 2>&1 ; then
     cat $tmpfile
-    git add *.txt *.rss
+    git add *.txt
     git diff HEAD
     git commit -m "Update information."
 fi

@@ -52,9 +52,9 @@ $mech->submit_form(fields      => {
                    } );
 
 
-my $rssurl = 'https://fronter.com/osloskoler/rss/get_today_rss.php?elements=default&LANG=no';
-$mech->get($rssurl);
-save_content($mech, 'today.rss');
+#my $rssurl = 'https://fronter.com/osloskoler/rss/get_today_rss.php?elements=default&LANG=no';
+#$mech->get($rssurl);
+#save_content($mech, 'today.rss');
 
 # FIXME Not sure why the message list is empty
 #my $messageurl = 'https://dashboard.fronter.com/api/messages/';
