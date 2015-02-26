@@ -2,6 +2,8 @@
 
 set -e
 
+cd $(dirname $0)
+
 if [ ! -d fronter-git ] ; then
     mkdir fronter-git
     (cd fronter-git; git init)
@@ -9,8 +11,13 @@ fi
 
 cd fronter-git ; ../fetch-fronter-data
 
-git add *.html
-git commit -m "Update raw HTML data."
-git add *.txt *.rss
-git diff HEAD
-git commit -m "Update information."
+tmpfile="$(tempfile)"
+if git commit -m "Update raw HTML data." *.html > $tmpfile 2>&1 ; then
+    cat $tmpfile
+    git add *.txt *.rss
+    git diff HEAD
+    git commit -m "Update information."
+else
+    echo nothing new.
+fi
+rm $tmpfile
