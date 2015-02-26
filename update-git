@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 if [ ! -d fronter-git ] ; then
     mkdir fronter-git
     (cd fronter-git; git init)
